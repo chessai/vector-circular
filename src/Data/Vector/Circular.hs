@@ -4,7 +4,7 @@
   , MultiParamTypeClasses
 #-}
 
-module Data.Vector.Cycle
+module Data.Vector.Circular
   ( -- * Type
     Vector(..)
 
@@ -26,15 +26,7 @@ import Prelude hiding (head)
 
 import qualified Data.Vector.Generic as G
 
--- | A cycled mutable vector. THis type is equivalent to
---   @'Data.List.cycle' xs@ for some finite @xs@, but
---   with /O(1)/ access and /O(1)/ rotations. Indexing
---   into this type is always total.
---data MVector v s a = UnsafeMkMVector
---  !(v s a)
---  {-# UNPACK #-} !Int
-
--- | A cycled immutable vector. This type is equivalent to
+-- | A circular, immutable vector. This type is equivalent to
 --   @'Data.List.cycle' xs@ for some finite @xs@, but
 --   with /O(1)/ access and /O(1)/ rotations. Indexing
 --   into this type is always total.
