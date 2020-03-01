@@ -1,3 +1,0 @@
-module Vector-cycle
-  (
-  ) where

@@ -1,12 +1,12 @@
 cabal-version: 2.2
 name:
-  vector-cycle
+  vector-circular
 version:
   0.1
 -- synopsis:
 -- description:
 bug-reports:
-  https://github.com/chessai/vector-cycle.git
+  https://github.com/chessai/vector-circular.git
 license:
   MIT
 license-file:
@@ -25,7 +25,7 @@ library
   hs-source-dirs:
     src
   exposed-modules:
-    Data.Vector.Cycle
+    Data.Vector.Circular
   build-depends:
     , base >= 4.11 && < 4.14
     , vector

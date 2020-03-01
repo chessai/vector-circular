@@ -5,15 +5,26 @@
 #-}
 
 module Data.Vector.Cycle
-  ( Vector(..)
-  ,
+  ( -- * Type
+    Vector(..)
+
+    -- * Construction
+  , singleton
+  , fromVector
+  , fromList
+
+    -- * Rotation
+  , rotateLeft
+  , rotateRight
+
+    -- * Indexing
+  , index
+  , head
   ) where
 
-import qualified Data.Vector.Generic as G
-import qualified Data.Vector.Generic.Mutable as GM
-import qualified Data.Vector as Lifted
+import Prelude hiding (head)
 
-import System.IO.Unsafe (unsafePerformIO)
+import qualified Data.Vector.Generic as G
 
 -- | A cycled mutable vector. THis type is equivalent to
 --   @'Data.List.cycle' xs@ for some finite @xs@, but
@@ -48,7 +59,7 @@ index :: G.Vector v a => Vector v a -> Int -> a
 index (UnsafeMkVector v r) ix = G.unsafeIndex v (mod (ix + r) (G.length v))
 
 head :: G.Vector v a => Vector v a -> a
-head = index 0
+head v = index v 0
 
 rotateRight :: Int -> Vector v a -> Vector v a
 rotateRight r' (UnsafeMkVector v r) = UnsafeMkVector v (r + r')
