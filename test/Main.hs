@@ -21,6 +21,7 @@ circularLaws :: [Laws]
 circularLaws =
   [ eqLaws genCircular
   , ordLaws genCircular
+  , semigroupLaws genCircular
 
   , foldableLaws genCircular1
   , functorLaws genCircular1
@@ -33,7 +34,7 @@ genCircular1 :: MonadGen m => m a -> m (CircularVector a)
 genCircular1 genA = do
   r <- Gen.int (Range.constant 0 100)
   as <- Gen.list (Range.constant 5 20) genA
-  rotateDir <- Gen.choice [pure rotateRight, pure rotateLeft]
+  rotateDir <- Gen.element [rotateRight, rotateLeft]
   pure (rotateDir r (unsafeFromList as))
 
 data SomeType
