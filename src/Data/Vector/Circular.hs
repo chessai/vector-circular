@@ -4,8 +4,9 @@
   , DeriveFunctor
   , DerivingStrategies
   , InstanceSigs
-  , QuasiQuotes
+  , ScopedTypeVariables
   , TemplateHaskell
+  , TypeApplications
 #-}
 
 module Data.Vector.Circular
@@ -14,6 +15,7 @@ module Data.Vector.Circular
 
     -- * Construction
   , singleton
+  , toVector
   , fromVector
   , unsafeFromVector
   , fromList
@@ -25,6 +27,11 @@ module Data.Vector.Circular
     -- * Rotation
   , rotateLeft
   , rotateRight
+
+    -- * Comparisons
+  , equivalent
+  , canonise
+  , leastRotation
 
     -- * Folds
   , Data.Vector.Circular.foldMap
@@ -45,11 +52,15 @@ module Data.Vector.Circular
   , last
   ) where
 
+import Control.Monad (when, forM_)
+import Control.Monad.ST (ST, runST)
 #if MIN_VERSION_base(4,13,0)
 import Data.Foldable (foldMap')
 #endif /* MIN_VERSION_base(4,13,0) */
 import Data.List.NonEmpty (NonEmpty)
+import Data.Primitive.MutVar
 import Data.Semigroup.Foldable.Class (Foldable1)
+import Data.Monoid (All(..))
 import Data.Vector (Vector)
 import Data.Vector.NonEmpty (NonEmptyVector)
 import GHC.Base (modInt)
@@ -58,6 +69,7 @@ import Language.Haskell.TH.Syntax
 import qualified Data.Foldable as Foldable
 import qualified Data.Semigroup.Foldable.Class as Foldable1
 import qualified Data.Vector as Vector
+import qualified Data.Vector.Mutable as MVector
 import qualified Data.Vector.NonEmpty as NonEmpty
 import qualified Prelude
 
@@ -69,8 +81,14 @@ data CircularVector a = CircularVector
   { vector :: {-# UNPACK #-} !(NonEmptyVector a)
   , rotation :: {-# UNPACK #-} !Int
   }
-  deriving stock (Eq, Ord, Show, Read)
+  deriving stock (Ord, Show, Read)
   deriving stock (Functor)
+
+instance Eq a => Eq (CircularVector a) where
+  c0@(CircularVector x rx) == c1@(CircularVector y ry)
+    | NonEmpty.length x /= NonEmpty.length y = False
+    | rx == ry = x == y
+    | otherwise = getAll $ flip Prelude.foldMap [0..NonEmpty.length x-1] $ \i -> All (index c0 i == index c1 i)
 
 -- | The 'Semigroup' @('<>')@ operation behaves by un-rolling
 --   the two vectors so that their rotation is 0, concatenating
@@ -191,6 +209,13 @@ foldMap1' f = \v ->
   in go 1 (f (head v))
 {-# inline foldMap1' #-}
 
+-- | Construct a 'Vector' from a 'CircularVector'.
+toVector :: CircularVector a -> Vector a
+toVector v = Vector.generate (length v) (index v)
+
+toNonEmptyVector :: CircularVector a -> NonEmptyVector a
+toNonEmptyVector v = NonEmpty.generate1 (length v) (index v)
+
 -- | Construct a 'CircularVector' from a 'NonEmptyVector'.
 fromVector :: NonEmptyVector a -> CircularVector a
 fromVector v = CircularVector v 0
@@ -285,6 +310,44 @@ vec xs =
 #else
   unsafeTExpCoerce [|unsafeFromList xs|]
 #endif /* MIN_VERSION_template_haskell(2,16,0) */
+
+equivalent :: Ord a => CircularVector a -> CircularVector a -> Bool
+equivalent x y = vector (canonise x) == vector (canonise y)
+
+canonise :: Ord a => CircularVector a -> CircularVector a
+canonise c@(CircularVector v r) = CircularVector v' (r - lr)
+  where
+    lr = leastRotation (NonEmpty.toVector v)
+    v' = toNonEmptyVector (rotateRight lr (CircularVector v 0))
+
+leastRotation :: forall a. (Ord a) => Vector a -> Int
+leastRotation v = runST go
+  where
+    go :: forall s. ST s Int
+    go = do
+      let s = v <> v
+      let len = Vector.length s
+      f <- MVector.replicate @_ @Int len (-1)
+      kVar <- newMutVar @_ @Int 0
+      forM_ [1..len-1] $ \j -> do
+        sj <- Vector.indexM s j
+        i0 <- readMutVar kVar >>= \k -> MVector.read f (j - k - 1)
+        let loop i = do
+              a <- readMutVar kVar >>= \k -> Vector.indexM s (k + i + 1)
+              if (i /= (-1) && sj /= a)
+                then do
+                  when (sj < a) (writeMutVar kVar (j - i - 1))
+                  loop =<< MVector.read f i
+                else pure i
+        i <- loop i0
+        a <- readMutVar kVar >>= \k -> Vector.indexM s (k + i + 1)
+        if sj /= a
+          then do
+            readMutVar kVar >>= \k -> when (sj < (s Vector.! k)) (writeMutVar kVar j)
+            readMutVar kVar >>= \k -> MVector.write f (j - k) (-1)
+          else do
+            readMutVar kVar >>= \k -> MVector.write f (j - k) (i + 1)
+      readMutVar kVar
 
 -- only safe if second argument is nonzero.
 -- used internally for modulus operations with length.

@@ -1,5 +1,6 @@
 {-# language
     DerivingStrategies
+  , TemplateHaskell
 #-}
 
 module Main (main) where
@@ -12,10 +13,12 @@ import qualified Hedgehog.Gen as Gen
 import qualified Hedgehog.Range as Range
 
 main :: IO Bool
-main = lawsCheckMany
-  [ ( "Data.Vector.Circular.CircularVector", circularLaws
-    )
-  ]
+main = do
+  b <- lawsCheckMany
+    [ ( "Data.Vector.Circular.CircularVector", circularLaws
+      )
+    ]
+  (&& b) <$> checkSequential $$(discover)
 
 circularLaws :: [Laws]
 circularLaws =
@@ -26,6 +29,11 @@ circularLaws =
   , foldableLaws genCircular1
   , functorLaws genCircular1
   ]
+
+prop_canonise :: Property
+prop_canonise = property $ do
+  v <- forAll genCircular
+  canonise v === v
 
 genCircular :: MonadGen m => m (CircularVector SomeType)
 genCircular = genCircular1 genSomeType
