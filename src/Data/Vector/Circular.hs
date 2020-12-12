@@ -109,15 +109,24 @@ data CircularVector a = CircularVector
   { vector :: {-# UNPACK #-} !(NonEmptyVector a)
   , rotation :: {-# UNPACK #-} !Int
   }
-  deriving stock (Ord, Show, Read)
-  deriving stock (Functor, Generic)
-  deriving anyclass (NFData)
+  deriving stock
+    ( Functor -- ^ @since 0.1
+    , Generic -- ^ @since 0.1.1
+    , Ord     -- ^ @since 0.1
+    , Read    -- ^ @since 0.1
+    , Show    -- ^ @since 0.1
+    )
+  deriving anyclass
+    ( NFData -- ^ @since 0.1.1
+    )
 
+-- | @since 0.1.1
 instance Traversable CircularVector where
   traverse :: (Applicative f) => (a -> f b) -> CircularVector a -> f (CircularVector b)
   traverse f (CircularVector v rot) =
     CircularVector <$> traverse f v <*> pure rot
 
+-- | @since 0.1
 instance Eq a => Eq (CircularVector a) where
   (==) :: CircularVector a -> CircularVector a -> Bool
   c0@(CircularVector x rx) == c1@(CircularVector y ry)
@@ -128,6 +137,8 @@ instance Eq a => Eq (CircularVector a) where
 -- | The 'Semigroup' @('<>')@ operation behaves by un-rolling
 --   the two vectors so that their rotation is 0, concatenating
 --   them, returning a new vector with a 0-rotation.
+--
+--   @since 0.1
 instance Semigroup (CircularVector a) where
   (<>) :: CircularVector a -> CircularVector a -> CircularVector a
   lhs <> rhs = CircularVector v 0
@@ -142,6 +153,7 @@ instance Semigroup (CircularVector a) where
                 else index rhs (ix - szLhs)
   {-# inline (<>) #-}
 
+-- | @since 0.1
 instance Foldable CircularVector where
   foldMap :: Monoid m => (a -> m) -> CircularVector a -> m
   foldMap = Data.Vector.Circular.foldMap
@@ -161,11 +173,13 @@ instance Foldable CircularVector where
   length = Data.Vector.Circular.length
   {-# inline length #-}
 
+-- | @since 0.1
 instance Foldable1 CircularVector where
   foldMap1 :: Semigroup m => (a -> m) -> CircularVector a -> m
   foldMap1 = Data.Vector.Circular.foldMap1
   {-# inline foldMap1 #-}
 
+-- | @since 0.1
 instance Lift a => Lift (CircularVector a) where
   lift c = do
     v <- [|NonEmpty.toVector (vector c)|]
@@ -178,11 +192,14 @@ instance Lift a => Lift (CircularVector a) where
 #endif /* MIN_VERSION_template_haskell(2,16,0) */
 
 -- | Get the length of a 'CircularVector'.
+--
+--   @since 0.1
 length :: CircularVector a -> Int
 length (CircularVector v _) = NonEmpty.length v
 {-# inline length #-}
 
 -- | Lazily-accumulating monoidal fold over a 'CircularVector'.
+--   @since 0.1
 foldMap :: Monoid m => (a -> m) -> CircularVector a -> m
 foldMap f = \v ->
   let len = Data.Vector.Circular.length v
@@ -193,6 +210,8 @@ foldMap f = \v ->
 {-# inline foldMap #-}
 
 -- | Strictly-accumulating monoidal fold over a 'CircularVector'.
+--
+--   @since 0.1
 foldMap' :: Monoid m => (a -> m) -> CircularVector a -> m
 foldMap' f = \v ->
   let len = Data.Vector.Circular.length v
@@ -202,29 +221,38 @@ foldMap' f = \v ->
   in go 0 mempty
 {-# inline foldMap' #-}
 
+-- | @since 0.1
 foldr :: (a -> b -> b) -> b -> CircularVector a -> b
 foldr = Foldable.foldr
 
+-- | @since 0.1
 foldl :: (b -> a -> b) -> b -> CircularVector a -> b
 foldl = Foldable.foldl
 
+-- | @since 0.1
 foldr' :: (a -> b -> b) -> b -> CircularVector a -> b
 foldr' = Foldable.foldr'
 
+-- | @since 0.1
 foldl' :: (b -> a -> b) -> b -> CircularVector a -> b
 foldl' = Foldable.foldl'
 
+-- | @since 0.1
 foldr1 :: (a -> a -> a) -> CircularVector a -> a
 foldr1 = Foldable.foldr1
 
+-- | @since 0.1
 foldl1 :: (a -> a -> a) -> CircularVector a -> a
 foldl1 = Foldable.foldl1
 
+-- | @since 0.1
 toNonEmpty :: CircularVector a -> NonEmpty a
 toNonEmpty = Foldable1.toNonEmpty
 
 -- | Lazily-accumulating semigroupoidal fold over
 --   a 'CircularVector'.
+--
+--   @since 0.1
 foldMap1 :: Semigroup m => (a -> m) -> CircularVector a -> m
 foldMap1 f = \v ->
   let len = Data.Vector.Circular.length v
@@ -236,6 +264,8 @@ foldMap1 f = \v ->
 
 -- | Strictly-accumulating semigroupoidal fold over
 --   a 'CircularVector'.
+--
+--   @since 0.1
 foldMap1' :: Semigroup m => (a -> m) -> CircularVector a -> m
 foldMap1' f = \v ->
   let len = Data.Vector.Circular.length v
@@ -246,14 +276,20 @@ foldMap1' f = \v ->
 {-# inline foldMap1' #-}
 
 -- | Construct a 'Vector' from a 'CircularVector'.
+--
+--   @since 0.1
 toVector :: CircularVector a -> Vector a
 toVector v = Vector.generate (length v) (index v)
 
 -- | Construct a 'NonEmptyVector' from a 'CircularVector'.
+--
+--   @since 0.1.1
 toNonEmptyVector :: CircularVector a -> NonEmptyVector a
 toNonEmptyVector v = NonEmpty.generate1 (length v) (index v)
 
 -- | Construct a 'CircularVector' from a 'NonEmptyVector'.
+--
+--   @since 0.1
 fromVector :: NonEmptyVector a -> CircularVector a
 fromVector v = CircularVector v 0
 {-# inline fromVector #-}
@@ -261,15 +297,21 @@ fromVector v = CircularVector v 0
 -- | Construct a 'CircularVector' from a 'Vector'.
 --
 --   Calls @'error'@ if the input vector is empty.
+--
+--   @since 0.1
 unsafeFromVector :: Vector a -> CircularVector a
 unsafeFromVector = fromVector . NonEmpty.unsafeFromVector
 
 -- | Construct a 'CircularVector' from a list.
+--
+--   @since 0.1
 fromList :: [a] -> Maybe (CircularVector a)
 fromList xs = fromListN (Prelude.length xs) xs
 {-# inline fromList #-}
 
 -- | Construct a 'CircularVector' from a list with a size hint.
+--
+--   @since 0.1
 fromListN :: Int -> [a] -> Maybe (CircularVector a)
 fromListN n xs = fromVector <$> (NonEmpty.fromListN n xs)
 {-# inline fromListN #-}
@@ -277,6 +319,8 @@ fromListN n xs = fromVector <$> (NonEmpty.fromListN n xs)
 -- | Construct a 'CircularVector' from a list.
 --
 --   Calls @'error'@ if the input list is empty.
+--
+--   @since 0.1
 unsafeFromList :: [a] -> CircularVector a
 unsafeFromList xs = unsafeFromListN (Prelude.length xs) xs
 
@@ -284,17 +328,23 @@ unsafeFromList xs = unsafeFromListN (Prelude.length xs) xs
 --
 --   Calls @'error'@ if the input list is empty, or
 --   if the size hint is @'<=' 0@.
+--
+--    @since 0.1
 unsafeFromListN :: Int -> [a] -> CircularVector a
 unsafeFromListN n xs
   | n <= 0 = error "Data.Vector.Circular.unsafeFromListN: invalid length!"
   | otherwise = unsafeFromVector (Vector.fromListN n xs)
 
 -- | Construct a singleton 'CircularVector.
+--
+--   @since 0.1
 singleton :: a -> CircularVector a
 singleton = fromVector . NonEmpty.singleton
 {-# inline singleton #-}
 
 -- | Index into a 'CircularVector'. This is always total.
+--
+--   @since 0.1
 index :: CircularVector a -> Int -> a
 index (CircularVector v r) = \ !ix ->
   let len = NonEmpty.length v
@@ -302,11 +352,15 @@ index (CircularVector v r) = \ !ix ->
 {-# inline index #-}
 
 -- | Get the first element of a 'CircularVector'. This is always total.
+--
+--   @since 0.1
 head :: CircularVector a -> a
 head v = index v 0
 {-# inline head #-}
 
 -- | Get the last element of a 'CircularVector'. This is always total.
+--
+--   @since 0.1
 last :: CircularVector a -> a
 last v = index v (Data.Vector.Circular.length v - 1)
 {-# inline last #-}
@@ -316,6 +370,8 @@ last v = index v (Data.Vector.Circular.length v - 1)
 --   /Note/: Right rotations start to break down due to
 --   arithmetic overflow when the size of the input vector is
 --   @'>' 'maxBound' @'Int'@
+--
+--   @since 0.1
 rotateRight :: Int -> CircularVector a -> CircularVector a
 rotateRight r' (CircularVector v r) = CircularVector v h
   where
@@ -328,6 +384,8 @@ rotateRight r' (CircularVector v r) = CircularVector v h
 --   /Note/: Left rotations start to break down due to
 --   arithmetic underflow when the size of the input vector is
 --   @'>' 'maxBound' @'Int'@
+--
+--   @since 0.1
 rotateLeft :: Int -> CircularVector a -> CircularVector a
 rotateLeft r' (CircularVector v r) = CircularVector v h
   where
@@ -338,7 +396,7 @@ rotateLeft r' (CircularVector v r) = CircularVector v h
 -- | Construct a 'CircularVector' at compile-time using
 --   typed Template Haskell.
 --
---   TODO: show examples
+--   @since 0.1
 vec :: Lift a => [a] -> Q (TExp (CircularVector a))
 vec [] = fail "Cannot create an empty CircularVector!"
 vec xs =
@@ -348,15 +406,18 @@ vec xs =
   unsafeTExpCoerce [|unsafeFromList xs|]
 #endif /* MIN_VERSION_template_haskell(2,16,0) */
 
+-- | @since 0.1
 equivalent :: Ord a => CircularVector a -> CircularVector a -> Bool
 equivalent x y = vector (canonise x) == vector (canonise y)
 
+-- | @since 0.1
 canonise :: Ord a => CircularVector a -> CircularVector a
 canonise (CircularVector v r) = CircularVector v' (r - lr)
   where
     lr = leastRotation (NonEmpty.toVector v)
     v' = toNonEmptyVector (rotateRight lr (CircularVector v 0))
 
+-- | @since 0.1
 leastRotation :: forall a. (Ord a) => Vector a -> Int
 leastRotation v = runST go
   where
@@ -393,78 +454,112 @@ unsafeMod = GHC.Base.modInt
 {-# inline unsafeMod #-}
 
 -- | /O(min(m,n))/ Zip two circular vectors with the given function.
+--
+--   @since 0.1.1
 zipWith :: (a -> b -> c) -> CircularVector a -> CircularVector b -> CircularVector c
 zipWith f a b = fromVector $ NonEmpty.zipWith f (toNonEmptyVector a) (toNonEmptyVector b)
 
 -- | Zip three circular vectors with the given function.
+--
+--   @since 0.1.1
 zipWith3 :: (a -> b -> c -> d) -> CircularVector a -> CircularVector b -> CircularVector c
   -> CircularVector d
 zipWith3 f a b c = fromVector $
   NonEmpty.zipWith3 f (toNonEmptyVector a) (toNonEmptyVector b) (toNonEmptyVector c)
 
 -- | /O(min(n,m))/ Elementwise pairing of circular vector elements.
--- This is a special case of 'zipWith' where the function argument is '(,)'
+--   This is a special case of 'zipWith' where the function argument is '(,)'
+--
+--   @since 0.1.1
 zip :: CircularVector a -> CircularVector b -> CircularVector (a,b)
 zip a b = fromVector $ NonEmpty.zip (toNonEmptyVector a) (toNonEmptyVector b)
 
 -- | Zip together three circular vectors.
+--
+--   @since 0.1.1
 zip3 :: CircularVector a -> CircularVector b -> CircularVector c -> CircularVector (a,b,c)
 zip3 a b c = fromVector $ NonEmpty.zip3 (toNonEmptyVector a) (toNonEmptyVector b) (toNonEmptyVector c)
 
 -- | /O(n)/ Reverse a circular vector.
+--
+--   @since 0.1.1
 reverse :: CircularVector a -> CircularVector a
 reverse = fromVector . NonEmpty.reverse . toNonEmptyVector
 
 -- | /O(n)/ Rotate to the minimum element of the circular vector according to the
--- given comparison function.
+--   given comparison function.
+--
+--   @since 0.1.1
 rotateToMinimumBy :: (a -> a -> Ordering) -> CircularVector a -> CircularVector a
 rotateToMinimumBy f (CircularVector v _rot) =
   CircularVector v (NonEmpty.minIndexBy f v)
 
 -- | /O(n)/ Rotate to the maximum element of the circular vector according to the
--- given comparison function.
+--   given comparison function.
+--
+--   @since 0.1.1
 rotateToMaximumBy :: (a -> a -> Ordering) -> CircularVector a -> CircularVector a
 rotateToMaximumBy f (CircularVector v _rot) =
   CircularVector v (NonEmpty.maxIndexBy f v)
 
 -- | /O(n)/ Check if all elements satisfy the predicate.
+--
+--   @since 0.1.1
 all :: (a -> Bool) -> CircularVector a -> Bool
 all f = NonEmpty.all f . vector
 
 -- | /O(n)/ Check if any element satisfies the predicate.
+--
+--   @since 0.1.1
 any :: (a -> Bool) -> CircularVector a -> Bool
 any f = NonEmpty.any f . vector
 
 -- | /O(n)/ Check if all elements are True.
+--
+--   @since 0.1.1
 and :: CircularVector Bool -> Bool
 and = NonEmpty.and . vector
 
 -- | /O(n)/ Check if any element is True.
+--
+--   @since 0.1.1
 or :: CircularVector Bool -> Bool
 or = NonEmpty.or . vector
 
 -- | /O(n)/ Compute the sum of the elements.
+--
+--   @since 0.1.1
 sum :: Num a => CircularVector a -> a
 sum = NonEmpty.sum . vector
 
 -- | /O(n)/ Compute the product of the elements.
+--
+--   @since 0.1.1
 product :: Num a => CircularVector a -> a
 product = NonEmpty.sum . vector
 
 -- | /O(n)/ Yield the maximum element of the circular vector.
+--
+--   @since 0.1.1
 maximum :: Ord a => CircularVector a -> a
 maximum = NonEmpty.maximum . vector
 
 -- | /O(n)/ Yield the maximum element of a circular vector according to the
--- given comparison function.
+--   given comparison function.
+--
+--   @since 0.1.1
 maximumBy :: (a -> a -> Ordering) -> CircularVector a -> a
 maximumBy f = NonEmpty.maximumBy f . vector
 
 -- | /O(n)/ Yield the minimum element of the circular vector.
+--
+--   @since 0.1.1
 minimum :: Ord a => CircularVector a -> a
 minimum = NonEmpty.minimum . vector
 
 -- | /O(n)/ Yield the minimum element of a circular vector according to the
--- given comparison function.
+--   given comparison function.
+--
+--   @since 0.1.1
 minimumBy :: (a -> a -> Ordering) -> CircularVector a -> a
 minimumBy f = NonEmpty.minimumBy f . vector
