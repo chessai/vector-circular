@@ -391,25 +391,26 @@ unsafeMod = GHC.Base.modInt
 
 -- | /O(min(m,n))/ Zip two circular vectors with the given function.
 zipWith :: (a -> b -> c) -> CircularVector a -> CircularVector b -> CircularVector c
-zipWith f a b = unsafeFromVector $ Vector.zipWith f (toVector a) (toVector b)
+zipWith f a b = fromVector $ NonEmpty.zipWith f (toNonEmptyVector a) (toNonEmptyVector b)
 
 -- | Zip three circular vectors with the given function.
 zipWith3 :: (a -> b -> c -> d) -> CircularVector a -> CircularVector b -> CircularVector c
   -> CircularVector d
-zipWith3 f a b c = unsafeFromVector $ Vector.zipWith3 f (toVector a) (toVector b) (toVector c)
+zipWith3 f a b c = fromVector $
+  NonEmpty.zipWith3 f (toNonEmptyVector a) (toNonEmptyVector b) (toNonEmptyVector c)
 
 -- | /O(min(n,m))/ Elementwise pairing of circular vector elements.
 -- This is a special case of 'zipWith' where the function argument is '(,)'
 zip :: CircularVector a -> CircularVector b -> CircularVector (a,b)
-zip a b = unsafeFromVector $ Vector.zip (toVector a) (toVector b)
+zip a b = fromVector $ NonEmpty.zip (toNonEmptyVector a) (toNonEmptyVector b)
 
 -- | Zip together three circular vectors.
 zip3 :: CircularVector a -> CircularVector b -> CircularVector c -> CircularVector (a,b,c)
-zip3 a b c = unsafeFromVector $ Vector.zip3 (toVector a) (toVector b) (toVector c)
+zip3 a b c = fromVector $ NonEmpty.zip3 (toNonEmptyVector a) (toNonEmptyVector b) (toNonEmptyVector c)
 
 -- | /O(n)/ Reverse a circular vector.
 reverse :: CircularVector a -> CircularVector a
-reverse = unsafeFromVector . Vector.reverse . toVector
+reverse = fromVector . NonEmpty.reverse . toNonEmptyVector
 
 -- | /O(n)/ Rotate to the minimum element of the circular vector according to the
 -- given comparison function.
