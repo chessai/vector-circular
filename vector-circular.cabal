@@ -33,6 +33,7 @@ library
     , semigroupoids >= 5.3 && < 5.4
     , template-haskell >= 2.12 && < 2.17
     , vector >= 0.12 && < 0.13
+    , deepseq
   ghc-options:
     -Wall -O2
   default-language:
