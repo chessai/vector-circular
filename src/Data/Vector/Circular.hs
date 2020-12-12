@@ -2,6 +2,7 @@
     BangPatterns
   , CPP
   , DeriveFunctor
+  , DeriveGeneric
   , DerivingStrategies
   , InstanceSigs
   , ScopedTypeVariables
@@ -16,6 +17,7 @@ module Data.Vector.Circular
     -- * Construction
   , singleton
   , toVector
+  , toNonEmptyVector
   , fromVector
   , unsafeFromVector
   , fromList
@@ -46,14 +48,38 @@ module Data.Vector.Circular
   , Data.Vector.Circular.foldMap1'
   , Data.Vector.Circular.toNonEmpty
 
+    -- * Specialized folds
+  , Data.Vector.Circular.all
+  , Data.Vector.Circular.any
+  , Data.Vector.Circular.and
+  , Data.Vector.Circular.or
+  , Data.Vector.Circular.sum
+  , Data.Vector.Circular.product
+  , Data.Vector.Circular.maximum
+  , Data.Vector.Circular.maximumBy
+  , Data.Vector.Circular.minimum
+  , Data.Vector.Circular.minimumBy
+  , rotateToMinimumBy
+  , rotateToMaximumBy
+
     -- * Indexing
   , index
   , head
   , last
+
+    -- * Zipping
+  , Data.Vector.Circular.zipWith
+  , Data.Vector.Circular.zipWith3
+  , Data.Vector.Circular.zip
+  , Data.Vector.Circular.zip3
+
+    -- * Permutations
+  , Data.Vector.Circular.reverse
   ) where
 
 import Control.Monad (when, forM_)
 import Control.Monad.ST (ST, runST)
+import Control.DeepSeq
 #if MIN_VERSION_base(4,13,0)
 import Data.Foldable (foldMap')
 #endif /* MIN_VERSION_base(4,13,0) */
@@ -64,6 +90,7 @@ import Data.Monoid (All(..))
 import Data.Vector (Vector)
 import Data.Vector.NonEmpty (NonEmptyVector)
 import GHC.Base (modInt)
+import GHC.Generics (Generic)
 import Prelude hiding (head, length, last)
 import Language.Haskell.TH.Syntax
 import qualified Data.Foldable as Foldable
@@ -82,7 +109,13 @@ data CircularVector a = CircularVector
   , rotation :: {-# UNPACK #-} !Int
   }
   deriving stock (Ord, Show, Read)
-  deriving stock (Functor)
+  deriving stock (Functor, Generic)
+
+instance NFData a => NFData (CircularVector a)
+
+instance Traversable CircularVector where
+  traverse f (CircularVector v rot) =
+    CircularVector <$> traverse f v <*> pure rot
 
 instance Eq a => Eq (CircularVector a) where
   c0@(CircularVector x rx) == c1@(CircularVector y ry)
@@ -213,6 +246,7 @@ foldMap1' f = \v ->
 toVector :: CircularVector a -> Vector a
 toVector v = Vector.generate (length v) (index v)
 
+-- | Construct a 'NonEmptyVector' from a 'CircularVector'.
 toNonEmptyVector :: CircularVector a -> NonEmptyVector a
 toNonEmptyVector v = NonEmpty.generate1 (length v) (index v)
 
@@ -315,7 +349,7 @@ equivalent :: Ord a => CircularVector a -> CircularVector a -> Bool
 equivalent x y = vector (canonise x) == vector (canonise y)
 
 canonise :: Ord a => CircularVector a -> CircularVector a
-canonise c@(CircularVector v r) = CircularVector v' (r - lr)
+canonise (CircularVector v r) = CircularVector v' (r - lr)
   where
     lr = leastRotation (NonEmpty.toVector v)
     v' = toNonEmptyVector (rotateRight lr (CircularVector v 0))
@@ -354,3 +388,79 @@ leastRotation v = runST go
 unsafeMod :: Int -> Int -> Int
 unsafeMod = GHC.Base.modInt
 {-# inline unsafeMod #-}
+
+-- | /O(min(m,n))/ Zip two circular vectors with the given function.
+zipWith :: (a -> b -> c) -> CircularVector a -> CircularVector b -> CircularVector c
+zipWith f a b = unsafeFromVector $ Vector.zipWith f (toVector a) (toVector b)
+
+-- | Zip three circular vectors with the given function.
+zipWith3 :: (a -> b -> c -> d) -> CircularVector a -> CircularVector b -> CircularVector c
+  -> CircularVector d
+zipWith3 f a b c = unsafeFromVector $ Vector.zipWith3 f (toVector a) (toVector b) (toVector c)
+
+-- | /O(min(n,m))/ Elementwise pairing of circular vector elements.
+-- This is a special case of 'zipWith' where the function argument is '(,)'
+zip :: CircularVector a -> CircularVector b -> CircularVector (a,b)
+zip a b = unsafeFromVector $ Vector.zip (toVector a) (toVector b)
+
+-- | Zip together three circular vectors.
+zip3 :: CircularVector a -> CircularVector b -> CircularVector c -> CircularVector (a,b,c)
+zip3 a b c = unsafeFromVector $ Vector.zip3 (toVector a) (toVector b) (toVector c)
+
+-- | /O(n)/ Reverse a circular vector.
+reverse :: CircularVector a -> CircularVector a
+reverse = unsafeFromVector . Vector.reverse . toVector
+
+-- | /O(n)/ Rotate to the minimum element of the circular vector according to the
+-- given comparison function.
+rotateToMinimumBy :: (a -> a -> Ordering) -> CircularVector a -> CircularVector a
+rotateToMinimumBy f (CircularVector v _rot) =
+  CircularVector v (NonEmpty.minIndexBy f v)
+
+-- | /O(n)/ Rotate to the maximum element of the circular vector according to the
+-- given comparison function.
+rotateToMaximumBy :: (a -> a -> Ordering) -> CircularVector a -> CircularVector a
+rotateToMaximumBy f (CircularVector v _rot) =
+  CircularVector v (NonEmpty.maxIndexBy f v)
+
+-- | /O(n)/ Check if all elements satisfy the predicate.
+all :: (a -> Bool) -> CircularVector a -> Bool
+all f = NonEmpty.all f . vector
+
+-- | /O(n)/ Check if any element satisfies the predicate.
+any :: (a -> Bool) -> CircularVector a -> Bool
+any f = NonEmpty.any f . vector
+
+-- | /O(n)/ Check if all elements are True.
+and :: CircularVector Bool -> Bool
+and = NonEmpty.and . vector
+
+-- | /O(n)/ Check if any element is True.
+or :: CircularVector Bool -> Bool
+or = NonEmpty.or . vector
+
+-- | /O(n)/ Compute the sum of the elements.
+sum :: Num a => CircularVector a -> a
+sum = NonEmpty.sum . vector
+
+-- | /O(n)/ Compute the product of the elements.
+product :: Num a => CircularVector a -> a
+product = NonEmpty.sum . vector
+
+-- | /O(n)/ Yield the maximum element of the circular vector.
+maximum :: Ord a => CircularVector a -> a
+maximum = NonEmpty.maximum . vector
+
+-- | /O(n)/ Yield the maximum element of a circular vector according to the
+-- given comparison function.
+maximumBy :: (a -> a -> Ordering) -> CircularVector a -> a
+maximumBy f = NonEmpty.maximumBy f . vector
+
+-- | /O(n)/ Yield the minimum element of the circular vector.
+minimum :: Ord a => CircularVector a -> a
+minimum = NonEmpty.minimum . vector
+
+-- | /O(n)/ Yield the minimum element of a circular vector according to the
+-- given comparison function.
+minimumBy :: (a -> a -> Ordering) -> CircularVector a -> a
+minimumBy f = NonEmpty.minimumBy f . vector
