@@ -114,10 +114,12 @@ data CircularVector a = CircularVector
   deriving anyclass (NFData)
 
 instance Traversable CircularVector where
+  traverse :: (Applicative f) => (a -> f b) -> CircularVector a -> f (CircularVector b)
   traverse f (CircularVector v rot) =
     CircularVector <$> traverse f v <*> pure rot
 
 instance Eq a => Eq (CircularVector a) where
+  (==) :: CircularVector a -> CircularVector a -> Bool
   c0@(CircularVector x rx) == c1@(CircularVector y ry)
     | NonEmpty.length x /= NonEmpty.length y = False
     | rx == ry = x == y
@@ -127,6 +129,7 @@ instance Eq a => Eq (CircularVector a) where
 --   the two vectors so that their rotation is 0, concatenating
 --   them, returning a new vector with a 0-rotation.
 instance Semigroup (CircularVector a) where
+  (<>) :: CircularVector a -> CircularVector a -> CircularVector a
   lhs <> rhs = CircularVector v 0
     where
       szLhs = length lhs
