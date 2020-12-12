@@ -193,9 +193,9 @@ foldMap1 :: Semigroup m => (a -> m) -> CircularVector a -> m
 foldMap1 f = \v ->
   let len = Data.Vector.Circular.length v
       go !ix
-        | ix < len = f (index v ix) <> go (ix + 1)
-        | otherwise = f (head v)
-  in go 1
+        | ix < len-1 = f (index v ix) <> go (ix + 1)
+        | otherwise  = f (last v)
+  in go 0
 {-# inline foldMap1 #-}
 
 -- | Strictly-accumulating semigroupoidal fold over
