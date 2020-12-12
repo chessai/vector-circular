@@ -1,6 +1,7 @@
 {-# language
     BangPatterns
   , CPP
+  , DeriveAnyClass
   , DeriveFunctor
   , DeriveGeneric
   , DerivingStrategies
@@ -110,8 +111,7 @@ data CircularVector a = CircularVector
   }
   deriving stock (Ord, Show, Read)
   deriving stock (Functor, Generic)
-
-instance NFData a => NFData (CircularVector a)
+  deriving anyclass (NFData)
 
 instance Traversable CircularVector where
   traverse f (CircularVector v rot) =
