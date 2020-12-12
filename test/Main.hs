@@ -7,6 +7,7 @@ module Main (main) where
 
 import Data.Vector.Circular
 
+import GHC.Generics
 import Hedgehog
 import Hedgehog.Classes
 import qualified Hedgehog.Gen as Gen
@@ -23,11 +24,13 @@ main = do
 circularLaws :: [Laws]
 circularLaws =
   [ eqLaws genCircular
+  , genericLaws genCircular (from <$> genCircular :: Gen (Rep (CircularVector SomeType) ()))
   , ordLaws genCircular
   , semigroupLaws genCircular
 
   , foldableLaws genCircular1
   , functorLaws genCircular1
+  , traversableLaws genCircular1
   ]
 
 prop_canonise :: Property
