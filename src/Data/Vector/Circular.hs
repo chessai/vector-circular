@@ -414,33 +414,33 @@ foldMap1' f = \v ->
   in go 1 (f (head v))
 {-# inline foldMap1' #-}
 
--- | Construct a 'Vector' from a 'CircularVector'.
+-- | /O(n)/ Construct a 'Vector' from a 'CircularVector'.
 --
 --   @since 0.1
 toVector :: CircularVector a -> Vector a
 toVector v = Vector.generate (length v) (index v)
 
--- | Construct a 'NonEmptyVector' from a 'CircularVector'.
+-- | /O(n)/ Construct a 'NonEmptyVector' from a 'CircularVector'.
 --
 --   @since 0.1.1
 toNonEmptyVector :: CircularVector a -> NonEmptyVector a
 toNonEmptyVector v = NonEmpty.generate1 (length v) (index v)
 
--- | Construct a 'CircularVector' from a 'NonEmptyVector'.
+-- | /O(1)/ Construct a 'CircularVector' from a 'NonEmptyVector'.
 --
 --   @since 0.1
 fromVector :: NonEmptyVector a -> CircularVector a
 fromVector v = CircularVector v 0
 {-# inline fromVector #-}
 
--- | Construct a 'CircularVector' from a 'NonEmptyVector'.
+-- | /O(1)/ Construct a 'CircularVector' from a 'NonEmptyVector'.
 --
 --   @since 0.1.2
 fromVector' :: Vector a -> Maybe (CircularVector a)
 fromVector' v = CircularVector <$> NonEmpty.fromVector v <*> pure 0
 {-# inline fromVector' #-}
 
--- | Construct a 'CircularVector' from a 'Vector'.
+-- | /O(1)/ Construct a 'CircularVector' from a 'Vector'.
 --
 --   Calls @'error'@ if the input vector is empty.
 --
@@ -458,7 +458,7 @@ unsafeFromVector = fromVector . NonEmpty.unsafeFromVector
 toList :: CircularVector a -> [a]
 toList = Vector.toList . toVector
 
--- | Construct a 'CircularVector' from a list.
+-- | /O(n)/ Construct a 'CircularVector' from a list.
 --
 --   @since 0.1
 fromList :: [a] -> Maybe (CircularVector a)
@@ -472,7 +472,7 @@ fromListN :: Int -> [a] -> Maybe (CircularVector a)
 fromListN n xs = fromVector <$> (NonEmpty.fromListN n xs)
 {-# inline fromListN #-}
 
--- | Construct a 'CircularVector' from a list.
+-- | /O(n)/ Construct a 'CircularVector' from a list.
 --
 --   Calls @'error'@ if the input list is empty.
 --
@@ -480,7 +480,7 @@ fromListN n xs = fromVector <$> (NonEmpty.fromListN n xs)
 unsafeFromList :: [a] -> CircularVector a
 unsafeFromList xs = unsafeFromListN (Prelude.length xs) xs
 
--- | Construct a 'CircularVector' from a list with a size hint.
+-- | /O(n)/ Construct a 'CircularVector' from a list with a size hint.
 --
 --   Calls @'error'@ if the input list is empty, or
 --   if the size hint is @'<=' 0@.
@@ -491,14 +491,14 @@ unsafeFromListN n xs
   | n <= 0 = error "Data.Vector.Circular.unsafeFromListN: invalid length!"
   | otherwise = unsafeFromVector (Vector.fromListN n xs)
 
--- | Construct a singleton 'CircularVector.
+-- | /O(1)/ Construct a singleton 'CircularVector.
 --
 --   @since 0.1
 singleton :: a -> CircularVector a
 singleton = fromVector . NonEmpty.singleton
 {-# inline singleton #-}
 
--- | Index into a 'CircularVector'. This is always total.
+-- | /O(1)/ Index into a 'CircularVector'. This is always total.
 --
 --   @since 0.1
 index :: CircularVector a -> Int -> a
@@ -507,21 +507,21 @@ index (CircularVector v r) = \ !ix ->
   in NonEmpty.unsafeIndex v (unsafeMod (ix + r) len)
 {-# inline index #-}
 
--- | Get the first element of a 'CircularVector'. This is always total.
+-- | /O(1)/ Get the first element of a 'CircularVector'. This is always total.
 --
 --   @since 0.1
 head :: CircularVector a -> a
 head v = index v 0
 {-# inline head #-}
 
--- | Get the last element of a 'CircularVector'. This is always total.
+-- | /O(1)/ Get the last element of a 'CircularVector'. This is always total.
 --
 --   @since 0.1
 last :: CircularVector a -> a
 last v = index v (Data.Vector.Circular.length v - 1)
 {-# inline last #-}
 
--- | Rotate the vector to left by @n@ number of elements.
+-- | /O(1)/ Rotate the vector to left by @n@ number of elements.
 --
 --   /Note/: Right rotations start to break down due to
 --   arithmetic overflow when the size of the input vector is
@@ -535,7 +535,7 @@ rotateRight r' (CircularVector v r) = CircularVector v h
     h = unsafeMod (r + unsafeMod r' len) len
 {-# inline rotateRight #-}
 
--- | Rotate the vector to the left by @n@ number of elements.
+-- | /O(1)/ Rotate the vector to the left by @n@ number of elements.
 --
 --   /Note/: Left rotations start to break down due to
 --   arithmetic underflow when the size of the input vector is
