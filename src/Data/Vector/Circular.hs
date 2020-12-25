@@ -191,11 +191,13 @@ import Control.DeepSeq
 -- import Data.Foldable (foldMap')
 #endif /* MIN_VERSION_base(4,13,0) */
 import Data.List.NonEmpty (NonEmpty((:|)))
-import Data.Primitive.MutVar
+import Data.Primitive.MutVar ( newMutVar, readMutVar, writeMutVar )
 import Data.Semigroup.Foldable.Class (Foldable1)
 import Data.Monoid (All(..))
 import Data.Vector (Vector)
 import Data.Vector.NonEmpty (NonEmptyVector)
+import Data.Functor.Classes
+import Text.Read (readPrec)
 import GHC.Base (modInt)
 import GHC.Generics (Generic)
 import Prelude hiding (head, length, last, map, concat, takeWhile
@@ -212,6 +214,7 @@ import qualified Data.Vector as Vector
 import qualified Data.Vector.Mutable as MVector
 import qualified Data.Vector.NonEmpty as NonEmpty
 import qualified Prelude
+
 
 -- | A circular, immutable vector. This type is equivalent to
 --   @'Data.List.cycle' xs@ for some finite, nonempty @xs@, but
@@ -241,10 +244,31 @@ instance Traversable CircularVector where
 -- | @since 0.1
 instance Eq a => Eq (CircularVector a) where
   (==) :: CircularVector a -> CircularVector a -> Bool
-  c0@(CircularVector x rx) == c1@(CircularVector y ry)
+  (==) = liftEq (==)
+
+-- | @since 0.1.2
+instance Eq1 CircularVector where
+  liftEq :: (a -> b -> Bool) -> CircularVector a -> CircularVector b -> Bool
+  liftEq eq c0@(CircularVector x rx) c1@(CircularVector y ry)
     | NonEmpty.length x /= NonEmpty.length y = False
-    | rx == ry = x == y
-    | otherwise = getAll $ flip Prelude.foldMap [0..NonEmpty.length x-1] $ \i -> All (index c0 i == index c1 i)
+    | rx == ry = liftEq eq x y
+    | otherwise = getAll $ flip Prelude.foldMap [0..NonEmpty.length x-1] $ \i ->
+        All (index c0 i `eq` index c1 i)
+
+instance Ord1 CircularVector where
+  liftCompare :: (a -> b -> Ordering) -> CircularVector a -> CircularVector b -> Ordering
+  liftCompare cmp (CircularVector x rx) (CircularVector y ry)
+    = liftCompare cmp x y <> compare rx ry
+
+instance Show1 CircularVector where
+  liftShowsPrec :: (Int -> a -> ShowS) -> ([a] -> ShowS) -> Int -> CircularVector a -> ShowS
+  liftShowsPrec sp sl d (CircularVector x rx) =
+    showsBinaryWith (liftShowsPrec sp sl) showsPrec "CircularVector" d x rx
+
+instance Read1 CircularVector where
+  liftReadPrec rp rl = readData $
+    readBinaryWith (liftReadPrec rp rl) readPrec "CircularVector" CircularVector
+  liftReadListPrec = liftReadListPrecDefault
 
 -- | The 'Semigroup' @('<>')@ operation behaves by un-rolling
 --   the two vectors so that their rotation is 0, concatenating
