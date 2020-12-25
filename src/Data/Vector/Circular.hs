@@ -146,7 +146,7 @@ module Data.Vector.Circular
   , unzip3
 
     -- ** Filtering
-  -- , uniq
+  , uniq
   , mapMaybe
   , imapMaybe
   , filter
@@ -1392,15 +1392,21 @@ forM cv f = fromVector <$> NonEmpty.forM (toNonEmptyVector cv) f
 forM_ :: Monad m => CircularVector a -> (a -> m b) -> m ()
 forM_ cv f = NonEmpty.forM_ (toNonEmptyVector cv) f
 
--- /O(n)/ Drop repeated adjacent elements.
+-- | /O(n)/ Drop repeated adjacent elements.
 --
 -- >>> uniq $ unsafeFromList [1,1,2,2,3,3,1]
 -- [1,2,3,1]
 --
 -- >>> uniq $ unsafeFromList [1,2,3,1]
 -- [1,2,3]
--- uniq :: Eq a => CircularVector a -> CircularVector a
--- uniq = FIXME
+uniq :: Eq a => CircularVector a -> CircularVector a
+uniq = fromVector . trim . NonEmpty.uniq . toNonEmptyVector
+  where
+    trim v
+      | Foldable.length v == 1 || NonEmpty.head v /= NonEmpty.last v
+        = v
+      | otherwise
+        = trim (NonEmpty.unsafeFromVector $ NonEmpty.tail v)
 
 -- | /O(n)/ Drop elements when predicate returns Nothing
 --
