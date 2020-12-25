@@ -1395,10 +1395,10 @@ forM_ cv f = NonEmpty.forM_ (toNonEmptyVector cv) f
 -- | /O(n)/ Drop repeated adjacent elements.
 --
 -- >>> uniq $ unsafeFromList [1,1,2,2,3,3,1]
--- [1,2,3,1]
+-- CircularVector {vector = [2,3,1], rotation = 0}
 --
 -- >>> uniq $ unsafeFromList [1,2,3,1]
--- [1,2,3]
+-- CircularVector {vector = [2,3,1], rotation = 0}
 uniq :: Eq a => CircularVector a -> CircularVector a
 uniq = fromVector . trim . NonEmpty.uniq . toNonEmptyVector
   where
