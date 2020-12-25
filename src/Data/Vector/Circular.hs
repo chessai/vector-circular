@@ -1425,7 +1425,7 @@ forM_ cv f = NonEmpty.forM_ (toNonEmptyVector cv) f
 -- CircularVector {vector = [2,3,1], rotation = 0}
 --
 -- >>> uniq $ unsafeFromList [1,2,3,1]
--- CircularVector {vector = [2,3,1], rotation = 0}
+-- CircularVector {vector = [1,2,3], rotation = 0}
 uniq :: Eq a => CircularVector a -> CircularVector a
 uniq = fromVector . trim . NonEmpty.uniq . toNonEmptyVector
   where
@@ -1433,7 +1433,7 @@ uniq = fromVector . trim . NonEmpty.uniq . toNonEmptyVector
       | Foldable.length v == 1 || NonEmpty.head v /= NonEmpty.last v
         = v
       | otherwise
-        = trim (NonEmpty.unsafeFromVector $ NonEmpty.tail v)
+        = trim (NonEmpty.unsafeFromVector $ NonEmpty.init v)
 
 -- | /O(n)/ Drop elements when predicate returns Nothing
 --
