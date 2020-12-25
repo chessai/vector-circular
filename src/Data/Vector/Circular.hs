@@ -255,16 +255,19 @@ instance Eq1 CircularVector where
     | otherwise = getAll $ flip Prelude.foldMap [0..NonEmpty.length x-1] $ \i ->
         All (index c0 i `eq` index c1 i)
 
+-- | @since 0.1.2
 instance Ord1 CircularVector where
   liftCompare :: (a -> b -> Ordering) -> CircularVector a -> CircularVector b -> Ordering
   liftCompare cmp (CircularVector x rx) (CircularVector y ry)
     = liftCompare cmp x y <> compare rx ry
 
+-- | @since 0.1.2
 instance Show1 CircularVector where
   liftShowsPrec :: (Int -> a -> ShowS) -> ([a] -> ShowS) -> Int -> CircularVector a -> ShowS
   liftShowsPrec sp sl d (CircularVector x rx) =
     showsBinaryWith (liftShowsPrec sp sl) showsPrec "CircularVector" d x rx
 
+-- | @since 0.1.2
 instance Read1 CircularVector where
   liftReadPrec rp rl = readData $
     readBinaryWith (liftReadPrec rp rl) readPrec "CircularVector" CircularVector
