@@ -238,9 +238,9 @@ data CircularVector v a = CircularVector
 --     CircularVector <$> traverse f v <*> pure rot
 
 -- | since 0.1.2
-instance (G.Vector v a, Eq (v a)) => Eq (CircularVector v a) where
+instance (G.Vector v a, Eq a) => Eq (CircularVector v a) where
   (==) :: CircularVector v a -> CircularVector v a -> Bool
-  a == b = toVector a == toVector b
+  a == b = toVector a `G.eq` toVector b
 
 -- | @since 0.1.2
 -- instance Eq2 CircularVector where
