@@ -30,6 +30,7 @@ library
     src
   exposed-modules:
     Data.Vector.Circular
+    Data.Vector.Circular.Generic
   build-depends:
     , base >= 4.11 && < 4.17
     , nonempty-vector >= 0.2 && < 0.3
