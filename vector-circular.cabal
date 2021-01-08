@@ -61,6 +61,8 @@ test-suite laws
     Haskell2010
 
 test-suite doctests
+  if os(windows)
+    buildable:    False
   type:           exitcode-stdio-1.0
   ghc-options:    -threaded
   hs-source-dirs: test
