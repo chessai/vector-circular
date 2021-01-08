@@ -1,0 +1,10 @@
+cradle:
+  cabal:
+    - path: "./src"
+      component: "lib:"
+
+    - path: "./test"
+      component: ":test:laws"
+
+    - path: "./test"
+      component: ":test:doctests"

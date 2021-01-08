@@ -451,7 +451,7 @@ unsafeFromVector = fromVector . NonEmpty.unsafeFromVector
 -- | /O(n)/ Convert from a circular vector to a list.
 --
 --
--- >>> let nev :: CircularVector Int = unsafeFromList [1..3] in toList nev
+-- >>> let nev = unsafeFromList [1..3] in toList nev
 -- [1,2,3]
 --
 --   @since 0.1.2
@@ -784,13 +784,13 @@ generate n f = fromVector' (Vector.generate n f)
 --
 -- >>> let f 0 = "a"; f _ = "k"; f :: Int -> String
 --
--- >>> generate1 2 f
+-- >>> toList $ generate1 2 f
 -- ["a","k"]
 --
--- >>> generate1 0 f
+-- >>> toList $ generate1 0 f
 -- ["a"]
 --
--- >>> generate1 (-1) f
+-- >>> toList $ generate1 (-1) f
 -- ["a"]
 --
 generate1 :: Int -> (Int -> a) -> CircularVector a
@@ -1421,11 +1421,14 @@ forM_ cv f = NonEmpty.forM_ (toNonEmptyVector cv) f
 
 -- | /O(n)/ Drop repeated adjacent elements.
 --
--- >>> uniq $ unsafeFromList [1,1,2,2,3,3,1]
--- CircularVector {vector = [2,3,1], rotation = 0}
+-- >>> toList $ uniq $ unsafeFromList [1,1,2,2,3,3,1]
+-- [1,2,3]
 --
--- >>> uniq $ unsafeFromList [1,2,3,1]
--- CircularVector {vector = [1,2,3], rotation = 0}
+-- >>> toList $ uniq $ unsafeFromList [1,2,3,1]
+-- [1,2,3]
+--
+-- >>> toList $ uniq $ unsafeFromList [1]
+-- [1]
 uniq :: Eq a => CircularVector a -> CircularVector a
 uniq = fromVector . trim . NonEmpty.uniq . toNonEmptyVector
   where
@@ -1719,7 +1722,7 @@ ifilterM f = NonEmpty.ifilterM f . toNonEmptyVector
 --
 --   @since 0.1.2
 --
--- >>> backpermute (unsafeFromList [1..3]) (unsafeFromList [2,0])
+-- >>> toList $ backpermute (unsafeFromList [1..3]) (unsafeFromList [2,0])
 -- [3,1]
 --
 backpermute :: CircularVector a -> CircularVector Int -> CircularVector a

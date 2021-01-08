@@ -212,6 +212,11 @@ import Data.Monoid
 import Data.Coerce
 import Data.Maybe ( fromMaybe )
 
+-- $setup
+-- >>> import Data.Vector (Vector)
+-- >>> import qualified Data.Vector
+
+
 -- | A circular, immutable vector. This type is equivalent to
 --   @'Data.List.cycle' xs@ for some finite, nonempty @xs@, but
 --   with /O(1)/ access and /O(1)/ rotations. Indexing
@@ -459,7 +464,7 @@ unsafeFromVector v = CircularVector v 0
 -- | /O(n)/ Convert from a circular vector to a list.
 --
 --
--- >>> let nev :: CircularVector Int = unsafeFromList [1..3] in toList nev
+-- >>> let nev = unsafeFromList @Vector [1..3] in toList nev
 -- [1,2,3]
 --
 --   @since 0.1.2
@@ -736,10 +741,10 @@ minimumBy f = G.minimumBy f . vector
 --
 --   @since 0.1.2
 --
--- >>> replicate 3 "a"
+-- >>> replicate @Vector 3 "a"
 -- Just (CircularVector {vector = ["a","a","a"], rotation = 0})
 --
--- >>> replicate 0 "a"
+-- >>> replicate @Vector 0 "a"
 -- Nothing
 --
 replicate :: G.Vector v a => Int -> a -> Maybe (CircularVector v a)
@@ -752,14 +757,14 @@ replicate n a = fromVector (G.replicate n a)
 --
 --   @since 0.1.2
 --
--- >>> replicate1 3 "a"
--- CircularVector {vector = ["a","a","a"], rotation = 0}
+-- >>> toList $ replicate1 @Vector 3 "a"
+-- ["a","a","a"]
 --
--- >>> replicate1 0 "a"
--- CircularVector {vector = ["a"], rotation = 0}
+-- >>> toList $ replicate1 @Vector 0 "a"
+-- ["a"]
 --
--- >>> replicate1 (-1) "a"
--- CircularVector {vector = ["a"], rotation = 0}
+-- >>> toList $ replicate1 @Vector (-1) "a"
+-- ["a"]
 replicate1 :: G.Vector v a => Int -> a -> CircularVector v a
 replicate1 n a = unsafeFromVector (G.replicate (max n 1) a)
 
@@ -772,13 +777,13 @@ replicate1 n a = unsafeFromVector (G.replicate (max n 1) a)
 --
 -- >>> let f 0 = "a"; f _ = "k"; f :: Int -> String
 --
--- >>> generate 1 f
+-- >>> generate @Vector 1 f
 -- Just (CircularVector {vector = ["a"], rotation = 0})
 --
--- >>> generate 0 f
+-- >>> generate @Vector 0 f
 -- Nothing
 --
--- >>> generate 2 f
+-- >>> generate @Vector 2 f
 -- Just (CircularVector {vector = ["a","k"], rotation = 0})
 --
 generate :: G.Vector v a => Int -> (Int -> a) -> Maybe (CircularVector v a)
@@ -793,13 +798,13 @@ generate n f = fromVector (G.generate n f)
 --
 -- >>> let f 0 = "a"; f _ = "k"; f :: Int -> String
 --
--- >>> generate1 2 f
+-- >>> toList $ generate1 @Vector 2 f
 -- ["a","k"]
 --
--- >>> generate1 0 f
+-- >>> toList $ generate1 @Vector 0 f
 -- ["a"]
 --
--- >>> generate1 (-1) f
+-- >>> toList $ generate1 @Vector (-1) f
 -- ["a"]
 --
 generate1 :: G.Vector v a => Int -> (Int -> a) -> CircularVector v a
@@ -811,13 +816,13 @@ generate1 n f = unsafeFromVector (G.generate (max n 1) f)
 --
 --   @since 0.1.2
 --
--- >>> iterateN 3 (+1) 0
+-- >>> iterateN @Vector 3 (+1) 0
 -- Just (CircularVector {vector = [0,1,2], rotation = 0})
 --
--- >>> iterateN 0 (+1) 0
+-- >>> iterateN @Vector 0 (+1) 0
 -- Nothing
 --
--- >>> iterateN (-1) (+1) 0
+-- >>> iterateN @Vector (-1) (+1) 0
 -- Nothing
 --
 iterateN :: G.Vector v a => Int -> (a -> a) -> a -> Maybe (CircularVector v a)
@@ -829,13 +834,13 @@ iterateN n f a = fromVector (G.iterateN n f a)
 --
 --   @since 0.1.2
 --
--- >>> iterateN1 3 (+1) 0
+-- >>> iterateN1 @Vector 3 (+1) 0
 -- CircularVector {vector = [0,1,2], rotation = 0}
 --
--- >>> iterateN1 0 (+1) 0
+-- >>> iterateN1 @Vector 0 (+1) 0
 -- CircularVector {vector = [0], rotation = 0}
 --
--- >>> iterateN1 (-1) (+1) 0
+-- >>> iterateN1 @Vector (-1) (+1) 0
 -- CircularVector {vector = [0], rotation = 0}
 --
 iterateN1 :: G.Vector v a => Int -> (a -> a) -> a -> CircularVector v a
@@ -848,16 +853,16 @@ iterateN1 n f a = unsafeFromVector (G.iterateN (max n 1) f a)
 --
 --   @since 0.1.2
 --
--- >>> replicateM @Maybe 3 (Just "a")
+-- >>> replicateM @Maybe @Vector 3 (Just "a")
 -- Just (Just (CircularVector {vector = ["a","a","a"], rotation = 0}))
 --
--- >>> replicateM @Maybe 3 Nothing
+-- >>> replicateM @Maybe @Vector 3 Nothing
 -- Nothing
 --
--- >>> replicateM @Maybe 0 (Just "a")
+-- >>> replicateM @Maybe @Vector 0 (Just "a")
 -- Just Nothing
 --
--- >>> replicateM @Maybe (-1) (Just "a")
+-- >>> replicateM @Maybe @Vector (-1) (Just "a")
 -- Just Nothing
 --
 replicateM :: (Monad m, G.Vector v a) => Int -> m a -> m (Maybe (CircularVector v a))
@@ -870,16 +875,16 @@ replicateM n a = fmap fromVector (G.replicateM n a)
 --
 --   @since 0.1.2
 --
--- >>> replicate1M @Maybe 3 (Just "a")
+-- >>> replicate1M @Maybe @Vector 3 (Just "a")
 -- Just (CircularVector {vector = ["a","a","a"], rotation = 0})
 --
--- >>> replicate1M @Maybe 3 Nothing
+-- >>> replicate1M @Maybe @Vector 3 Nothing
 -- Nothing
 --
--- >>> replicate1M @Maybe 0 (Just "a")
+-- >>> replicate1M @Maybe @Vector 0 (Just "a")
 -- Just (CircularVector {vector = ["a"], rotation = 0})
 --
--- >>> replicate1M @Maybe (-1) (Just "a")
+-- >>> replicate1M @Maybe @Vector (-1) (Just "a")
 -- Just (CircularVector {vector = ["a"], rotation = 0})
 --
 replicate1M :: (Monad m, G.Vector v a) => Int -> m a -> m (CircularVector v a)
@@ -892,16 +897,16 @@ replicate1M n a = fmap unsafeFromVector (G.replicateM (max n 1) a)
 --
 --   @since 0.1.2
 --
--- >>> generateM 3 (\i -> if i < 1 then ["a"] else ["b"])
+-- >>> generateM @[] @Vector 3 (\i -> if i < 1 then ["a"] else ["b"])
 -- [Just (CircularVector {vector = ["a","b","b"], rotation = 0})]
 --
--- >>> generateM @[] @Int 3 (const [])
+-- >>> generateM @[] @Vector @Int 3 (const [])
 -- []
 --
--- >>> generateM @[] @Int 0 (const [1])
+-- >>> generateM @[] @Vector @Int 0 (const [1])
 -- [Nothing]
 --
--- >>> generateM @Maybe @Int (-1) (const Nothing)
+-- >>> generateM @Maybe @Vector @Int (-1) (const Nothing)
 -- Just Nothing
 --
 generateM :: (Monad m, G.Vector v a) => Int -> (Int -> m a) -> m (Maybe (CircularVector v a))
@@ -914,16 +919,16 @@ generateM n f = fmap fromVector (G.generateM n f)
 --
 --   @since 0.1.2
 --
--- >>> generate1M 3 (\i -> if i < 1 then Just "a" else Just "b")
+-- >>> generate1M @Maybe @Vector 3 (\i -> if i < 1 then Just "a" else Just "b")
 -- Just (CircularVector {vector = ["a","b","b"], rotation = 0})
 --
--- >>> generate1M 3 (const [])
+-- >>> generate1M @[] @Vector 3 (const [])
 -- []
 --
--- >>> generate1M 0 (const $ Just 1)
+-- >>> generate1M @Maybe @Vector 0 (const $ Just 1)
 -- Just (CircularVector {vector = [1], rotation = 0})
 --
--- >>> generate1M (-1) (const Nothing)
+-- >>> generate1M @Maybe @Vector (-1) (const Nothing)
 -- Nothing
 --
 generate1M :: (Monad m, G.Vector v a) => Int -> (Int -> m a) -> m (CircularVector v a)
@@ -936,13 +941,13 @@ generate1M n f = fmap unsafeFromVector (G.generateM (max n 1) f)
 --
 --   @since 0.1.2
 --
--- >>> iterateNM @Maybe 3 return "a"
+-- >>> iterateNM @Maybe @Vector 3 return "a"
 -- Just (Just (CircularVector {vector = ["a","a","a"], rotation = 0}))
 --
--- >>> iterateNM @Maybe 3 (const Nothing) "a"
+-- >>> iterateNM @Maybe @Vector 3 (const Nothing) "a"
 -- Nothing
 --
--- >>> iterateNM @Maybe 0 return "a"
+-- >>> iterateNM @Maybe @Vector 0 return "a"
 -- Just Nothing
 --
 iterateNM :: (Monad m, G.Vector v a) => Int -> (a -> m a) -> a -> m (Maybe (CircularVector v a))
@@ -955,16 +960,16 @@ iterateNM n f a = fmap fromVector (G.iterateNM n f a)
 --
 --   @since 0.1.2
 --
--- >>> iterateN1M @Maybe 3 return "a"
+-- >>> iterateN1M @Maybe @Vector 3 return "a"
 -- Just (CircularVector {vector = ["a","a","a"], rotation = 0})
 --
--- >>> iterateN1M @Maybe 3 (const Nothing) "a"
+-- >>> iterateN1M @Maybe @Vector 3 (const Nothing) "a"
 -- Nothing
 --
--- >>> iterateN1M @Maybe 0 return "a"
+-- >>> iterateN1M @Maybe @Vector 0 return "a"
 -- Just (CircularVector {vector = ["a"], rotation = 0})
 --
--- >>> iterateN1M @Maybe (-1) return "a"
+-- >>> iterateN1M @Maybe @Vector (-1) return "a"
 -- Just (CircularVector {vector = ["a"], rotation = 0})
 --
 iterateN1M :: (Monad m, G.Vector v a) => Int -> (a -> m a) -> a -> m (CircularVector v a)
@@ -1015,10 +1020,10 @@ unsafeCreateT p = fmap unsafeFromVector (G.createT p)
 --
 --   @since 0.1.2
 --
--- >>> unfoldr (\b -> case b of "a" -> Just ("a", "b"); _ ->  Nothing) "a"
+-- >>> unfoldr @Vector (\b -> case b of "a" -> Just ("a", "b"); _ ->  Nothing) "a"
 -- Just (CircularVector {vector = ["a"], rotation = 0})
 --
--- >>> unfoldr (const Nothing) "a"
+-- >>> unfoldr @Vector (const Nothing) "a"
 -- Nothing
 --
 unfoldr :: G.Vector v a => (b -> Maybe (a, b)) -> b -> Maybe (CircularVector v a)
@@ -1032,10 +1037,10 @@ unfoldr f b = fromVector (G.unfoldr f b)
 --
 --   @since 0.1.2
 --
--- >>> unfoldr1 (\b -> case b of "a" -> Just ("a", "b"); _ ->  Nothing) "first" "a"
+-- >>> unfoldr1 @Vector (\b -> case b of "a" -> Just ("a", "b"); _ ->  Nothing) "first" "a"
 -- CircularVector {vector = ["first","a"], rotation = 0}
 --
--- >>> unfoldr1 (const Nothing) "first" "a"
+-- >>> unfoldr1 @Vector (const Nothing) "first" "a"
 -- CircularVector {vector = ["first"], rotation = 0}
 --
 unfoldr1 :: G.Vector v a => (b -> Maybe (a, b)) -> a -> b -> CircularVector v a
@@ -1051,13 +1056,13 @@ unfoldr1 f a b = cons a (unsafeFromVector (G.unfoldr f b))
 --
 --   @since 0.1.2
 --
--- >>> unfoldrN 3 (\b -> Just (b+1, b+1)) 0
+-- >>> unfoldrN @Vector 3 (\b -> Just (b+1, b+1)) 0
 -- Just (CircularVector {vector = [1,2,3], rotation = 0})
 --
--- >>> unfoldrN 3 (const Nothing) 0
+-- >>> unfoldrN @Vector 3 (const Nothing) 0
 -- Nothing
 --
--- >>> unfoldrN 0 (\b -> Just (b+1, b+1)) 0
+-- >>> unfoldrN @Vector 0 (\b -> Just (b+1, b+1)) 0
 -- Nothing
 --
 unfoldrN :: G.Vector v a => Int -> (b -> Maybe (a, b)) -> b -> Maybe (CircularVector v a)
@@ -1073,13 +1078,13 @@ unfoldrN n f b = fromVector (G.unfoldrN n f b)
 --
 --   @since 0.1.2
 --
--- >>> unfoldr1N 3 (\b -> Just (b+1, b+1)) 0 0
+-- >>> unfoldr1N @Vector 3 (\b -> Just (b+1, b+1)) 0 0
 -- CircularVector {vector = [0,1,2,3], rotation = 0}
 --
--- >>> unfoldr1N 3 (const Nothing) 0 0
+-- >>> unfoldr1N @Vector 3 (const Nothing) 0 0
 -- CircularVector {vector = [0], rotation = 0}
 --
--- >>> unfoldr1N 0 (\b -> Just (b+1, b+1)) 0 0
+-- >>> unfoldr1N @Vector 0 (\b -> Just (b+1, b+1)) 0 0
 -- CircularVector {vector = [0], rotation = 0}
 --
 unfoldr1N
@@ -1242,7 +1247,7 @@ enumFromThenTo a0 a1 a2 = fromVector (G.enumFromThenTo a0 a1 a2)
 --
 --   @since 0.1.2
 --
--- >>> cons 1 (unsafeFromList [2,3])
+-- >>> cons 1 (unsafeFromList @Vector [2,3])
 -- CircularVector {vector = [1,2,3], rotation = 0}
 --
 cons :: G.Vector v a => a -> CircularVector v a -> CircularVector v a
@@ -1253,7 +1258,7 @@ cons a cv = consV a (toVector cv)
 --
 --   @since 0.1.2
 --
--- >>> consV 1 (Vector.fromList [2,3])
+-- >>> consV 1 (Data.Vector.fromList [2,3])
 -- CircularVector {vector = [1,2,3], rotation = 0}
 --
 consV :: G.Vector v a => a -> v a -> CircularVector v a
@@ -1264,7 +1269,7 @@ consV a = unsafeFromVector . G.cons a
 --
 --   @since 0.1.2
 --
--- >>> snoc (unsafeFromList [1,2]) 3
+-- >>> snoc (unsafeFromList @Vector [1,2]) 3
 -- CircularVector {vector = [1,2,3], rotation = 0}
 --
 snoc :: G.Vector v a => CircularVector v a -> a -> CircularVector v a
@@ -1274,7 +1279,7 @@ snoc = snocV . toVector
 --
 --   @since 0.1.2
 --
--- >>> snocV (Vector.fromList [1,2]) 3
+-- >>> snocV (Data.Vector.fromList [1,2]) 3
 -- CircularVector {vector = [1,2,3], rotation = 0}
 --
 snocV :: G.Vector v a => v a -> a -> CircularVector v a
@@ -1284,7 +1289,7 @@ snocV as = unsafeFromVector . G.snoc as
 --
 --   @since 0.1.2
 --
--- >>> (unsafeFromList [1..3]) ++ (unsafeFromList [4..6])
+-- >>> (unsafeFromList @Vector [1..3]) ++ (unsafeFromList [4..6])
 -- CircularVector {vector = [1,2,3,4,5,6], rotation = 0}
 --
 (++) :: G.Vector v a => CircularVector v a -> CircularVector v a -> CircularVector v a
@@ -1297,7 +1302,7 @@ v ++ v' = unsafeFromVector (toVector v G.++ toVector v')
 --
 --   @since 0.1.2
 --
--- >>> concat [(unsafeFromList [1..3]), (unsafeFromList [4..6])]
+-- >>> concat [(unsafeFromList @Vector [1..3]), (unsafeFromList [4..6])]
 -- Just (CircularVector {vector = [1,2,3,4,5,6], rotation = 0})
 --
 concat :: G.Vector v a => [CircularVector v a] -> Maybe (CircularVector v a)
@@ -1309,7 +1314,7 @@ concat (a:as) = Just (concat1 (a :| as))
 --
 --   @since 0.1.2
 --
--- >>> concat1 ((unsafeFromList [1..3]) :| [(unsafeFromList [4..6])])
+-- >>> concat1 ((unsafeFromList @Vector [1..3]) :| [(unsafeFromList [4..6])])
 -- CircularVector {vector = [1,2,3,4,5,6], rotation = 0}
 --
 concat1 :: G.Vector v a => NonEmpty (CircularVector v a) -> CircularVector v a
@@ -1319,7 +1324,7 @@ concat1 = unsafeFromVector . G.concatNE . fmap toVector
 --
 --   @since 0.1.2
 --
--- >>> map (+1) $ unsafeFromList [1..3]
+-- >>> map (+1) $ unsafeFromList @Vector [1..3]
 -- CircularVector {vector = [2,3,4], rotation = 0}
 --
 map :: (G.Vector v a, G.Vector v b) => (a -> b) -> CircularVector v a -> CircularVector v b
@@ -1330,7 +1335,7 @@ map f (CircularVector v rot) = CircularVector (G.map f v) rot
 --
 --   @since 0.1.2
 --
--- >>> imap (\i a -> if i == 2 then a+1 else a+0) $ unsafeFromList [1..3]
+-- >>> imap (\i a -> if i == 2 then a+1 else a+0) $ unsafeFromList @Vector [1..3]
 -- CircularVector {vector = [1,2,4], rotation = 0}
 --
 imap :: (G.Vector v a, G.Vector v b) => (Int -> a -> b) -> CircularVector v a -> CircularVector v b
@@ -1340,7 +1345,7 @@ imap f = unsafeFromVector . G.imap f . toVector
 --
 --   @since 0.1.2
 --
--- >>> concatMap (\a -> unsafeFromList [a,a]) (unsafeFromList [1,2,3])
+-- >>> concatMap (\a -> unsafeFromList @Vector [a,a]) (unsafeFromList [1,2,3])
 -- CircularVector {vector = [1,1,2,2,3,3], rotation = 0}
 --
 concatMap
@@ -1355,10 +1360,10 @@ concatMap f = unsafeFromVector . G.concatMap (toVector . f) . toVector
 --
 --   @since 0.1.2
 --
--- >>> mapM Just (unsafeFromList [1..3])
+-- >>> mapM Just (unsafeFromList @Vector [1..3])
 -- Just (CircularVector {vector = [1,2,3], rotation = 0})
 --
--- >>> mapM (const Nothing) (unsafeFromList [1..3])
+-- >>> mapM (const Nothing) (unsafeFromList @Vector [1..3])
 -- Nothing
 --
 mapM :: (Monad m, G.Vector v a, G.Vector v b) => (a -> m b) -> CircularVector v a -> m (CircularVector v b)
@@ -1369,10 +1374,10 @@ mapM f = fmap unsafeFromVector . G.mapM f . toVector
 --
 --   @since 0.1.2
 --
--- >>> imapM (\i a -> if i == 1 then Just a else Just 0) (unsafeFromList [1..3])
+-- >>> imapM (\i a -> if i == 1 then Just a else Just 0) (unsafeFromList @Vector [1..3])
 -- Just (CircularVector {vector = [0,2,0], rotation = 0})
 --
--- >>> imapM (\_ _ -> Nothing) (unsafeFromList [1..3])
+-- >>> imapM (\_ _ -> Nothing) (unsafeFromList @Vector [1..3])
 -- Nothing
 --
 imapM
@@ -1387,10 +1392,10 @@ imapM f = fmap unsafeFromVector . G.imapM f . toVector
 --
 --   @since 0.1.2
 --
--- >>> mapM_ (const $ Just ()) (unsafeFromList [1..3])
+-- >>> mapM_ (const $ Just ()) (unsafeFromList @Vector [1..3])
 -- Just ()
 --
--- >>> mapM_ (const Nothing) (unsafeFromList [1..3])
+-- >>> mapM_ (const Nothing) (unsafeFromList @Vector [1..3])
 -- Nothing
 --
 mapM_ :: (Monad m, G.Vector v a, G.Vector v b) => (a -> m b) -> CircularVector v a -> m ()
@@ -1401,12 +1406,12 @@ mapM_ f = G.mapM_ f . toVector
 --
 --   @since 0.1.2
 --
--- >>> imapM_ (\i a -> if i == 1 then print a else putStrLn "0") (unsafeFromList [1..3])
+-- >>> imapM_ (\i a -> if i == 1 then print a else putStrLn "0") (unsafeFromList @Vector [1..3])
 -- 0
 -- 2
 -- 0
 --
--- >>> imapM_ (\_ _ -> Nothing) (unsafeFromList [1..3])
+-- >>> imapM_ (\_ _ -> Nothing) (unsafeFromList @Vector [1..3])
 -- Nothing
 --
 imapM_ :: (Monad m, G.Vector v a) => (Int -> a -> m b) -> CircularVector v a -> m ()
@@ -1432,11 +1437,11 @@ forM_ cv f = G.forM_ (toVector cv) f
 
 -- | /O(n)/ Drop repeated adjacent elements.
 --
--- >>> uniq $ unsafeFromList [1,1,2,2,3,3,1]
--- CircularVector {vector = [2,3,1], rotation = 0}
+-- >>> toList $ uniq $ unsafeFromList @Vector [1,1,2,2,3,3,1]
+-- [1,2,3]
 --
--- >>> uniq $ unsafeFromList [1,2,3,1]
--- CircularVector {vector = [1,2,3], rotation = 0}
+-- >>> toList $ uniq $ unsafeFromList @Vector [1,2,3,1]
+-- [1,2,3]
 uniq :: (G.Vector v a, Eq a) => CircularVector v a -> CircularVector v a
 uniq = unsafeFromVector . trim . G.uniq . toVector
   where
@@ -1452,7 +1457,7 @@ uniq = unsafeFromVector . trim . G.uniq . toVector
 --
 --   @since 0.1.2
 --
--- >>> mapMaybe (\a -> if a == 2 then Nothing else Just a) (unsafeFromList [1..3])
+-- >>> mapMaybe (\a -> if a == 2 then Nothing else Just a) (unsafeFromList @Vector [1..3])
 -- [1,3]
 mapMaybe
     :: (G.Vector v a, G.Vector v b)
@@ -1467,7 +1472,7 @@ mapMaybe f = G.mapMaybe f . toVector
 --
 --   @since 0.1.2
 --
--- >>> imapMaybe (\i a -> if a == 2 || i == 2 then Nothing else Just a) (unsafeFromList [1..3])
+-- >>> imapMaybe (\i a -> if a == 2 || i == 2 then Nothing else Just a) (unsafeFromList @Vector [1..3])
 -- [1]
 --
 imapMaybe
@@ -1484,7 +1489,7 @@ imapMaybe f = G.imapMaybe f . toVector
 --
 --   @since 0.1.2
 --
--- >>> takeWhile (/= 3) (unsafeFromList [1..3])
+-- >>> takeWhile (/= 3) (unsafeFromList @Vector [1..3])
 -- [1,2]
 --
 takeWhile :: G.Vector v a => (a -> Bool) -> CircularVector v a -> v a
@@ -1497,7 +1502,7 @@ takeWhile f = G.takeWhile f . toVector
 --
 --   @since 0.1.2
 --
--- >>> dropWhile (/= 3) (unsafeFromList [1..3])
+-- >>> dropWhile (/= 3) (unsafeFromList @Vector [1..3])
 -- [3]
 --
 dropWhile :: G.Vector v a => (a -> Bool) -> CircularVector v a -> v a
@@ -1514,7 +1519,7 @@ dropWhile f = G.dropWhile f . toVector
 --
 --   @since 0.1.2
 --
--- >>> partition (< 3) (unsafeFromList [1..5])
+-- >>> partition (< 3) (unsafeFromList @Vector [1..5])
 -- ([1,2],[3,4,5])
 --
 partition :: G.Vector v a => (a -> Bool) -> CircularVector v a -> (v a, v a)
@@ -1544,7 +1549,7 @@ unstablePartition f = G.unstablePartition f . toVector
 --
 --   @since 0.1.2
 --
--- >>> span (== 1) (unsafeFromList [1,1,2,3,1])
+-- >>> span (== 1) (unsafeFromList @Vector [1,1,2,3,1])
 -- ([1,1],[2,3,1])
 --
 span :: G.Vector v a => (a -> Bool) -> CircularVector v a -> (v a, v a)
@@ -1558,7 +1563,7 @@ span f = G.span f . toVector
 --
 --   @since 0.1.2
 --
--- >>> break (== 2) (unsafeFromList [1,1,2,3,1])
+-- >>> break (== 2) (unsafeFromList @Vector [1,1,2,3,1])
 -- ([1,1],[2,3,1])
 --
 break :: G.Vector v a => (a -> Bool) -> CircularVector v a -> (v a, v a)
@@ -1568,9 +1573,9 @@ break f = G.break f . toVector
 --
 --   @since 0.1.2
 --
--- >>> elem 1 $ unsafeFromList [1..3]
+-- >>> elem 1 $ unsafeFromList @Vector [1..3]
 -- True
--- >>> elem 4 $ unsafeFromList [1..3]
+-- >>> elem 4 $ unsafeFromList @Vector [1..3]
 -- False
 --
 elem :: (G.Vector v a, Eq a) => a -> CircularVector v a -> Bool
@@ -1581,10 +1586,10 @@ elem a = G.elem a . toVector
 --
 --   @since 0.1.2
 --
--- >>> notElem 1 $ unsafeFromList [1..3]
+-- >>> notElem 1 $ unsafeFromList @Vector [1..3]
 -- False
 --
--- >>> notElem 4 $ unsafeFromList [1..3]
+-- >>> notElem 4 $ unsafeFromList @Vector [1..3]
 -- True
 --
 notElem :: (G.Vector v a, Eq a) => a -> CircularVector v a -> Bool
@@ -1595,10 +1600,10 @@ notElem a = G.notElem a . toVector
 --
 --   @since 0.1.2
 --
--- >>> find (< 2) $ unsafeFromList [1..3]
+-- >>> find (< 2) $ unsafeFromList @Vector [1..3]
 -- Just 1
 --
--- >>> find (< 0) $ unsafeFromList [1..3]
+-- >>> find (< 0) $ unsafeFromList @Vector [1..3]
 -- Nothing
 --
 find :: G.Vector v a => (a -> Bool) -> CircularVector v a -> Maybe a
@@ -1609,13 +1614,13 @@ find f = G.find f . toVector
 --
 --   @since 0.1.2
 --
--- >>> findIndex (< 2) $ unsafeFromList [1..3]
+-- >>> findIndex (< 2) $ unsafeFromList @Vector [1..3]
 -- Just 0
 --
--- >>> findIndex (< 0) $ unsafeFromList [1..3]
+-- >>> findIndex (< 0) $ unsafeFromList @Vector [1..3]
 -- Nothing
 --
--- >>> findIndex (==1) $ rotateRight 1 (unsafeFromList [1..3])
+-- >>> findIndex (==1) $ rotateRight 1 (unsafeFromList @Vector [1..3])
 -- Just 2
 findIndex :: G.Vector v a => (a -> Bool) -> CircularVector v a -> Maybe Int
 findIndex f = G.findIndex f . toVector
@@ -1625,10 +1630,10 @@ findIndex f = G.findIndex f . toVector
 --
 --   @since 0.1.2
 --
--- >>> findIndices (< 3) $ unsafeFromList [1..3]
+-- >>> findIndices (< 3) $ unsafeFromList @Vector [1..3]
 -- [0,1]
 --
--- >>> findIndices (< 0) $ unsafeFromList [1..3]
+-- >>> findIndices (< 0) $ unsafeFromList @Vector [1..3]
 -- []
 --
 findIndices :: (G.Vector v a, G.Vector v Int) => (a -> Bool) -> CircularVector v a -> v Int
@@ -1640,10 +1645,10 @@ findIndices f = G.findIndices f . toVector
 --
 --   @since 0.1.2
 --
--- >>> elemIndex 1 $ unsafeFromList [1..3]
+-- >>> elemIndex 1 $ unsafeFromList @Vector [1..3]
 -- Just 0
 --
--- >>> elemIndex 0 $ unsafeFromList [1..3]
+-- >>> elemIndex 0 $ unsafeFromList @Vector [1..3]
 -- Nothing
 --
 elemIndex :: (G.Vector v a, Eq a) => a -> CircularVector v a -> Maybe Int
@@ -1654,10 +1659,10 @@ elemIndex a = G.elemIndex a . toVector
 --
 --   @since 0.1.2
 --
--- >>> elemIndices 1 $ unsafeFromList [1,2,3,1]
+-- >>> elemIndices 1 $ unsafeFromList @Vector [1,2,3,1]
 -- [0,3]
 --
--- >>> elemIndices 0 $ unsafeFromList [1..3]
+-- >>> elemIndices 0 $ unsafeFromList @Vector [1..3]
 -- []
 --
 elemIndices :: (G.Vector v a, G.Vector v Int, Eq a) => a -> CircularVector v a -> v Int
@@ -1670,10 +1675,10 @@ elemIndices a = G.elemIndices a . toVector
 --
 --   @since 0.1.2
 --
--- >>> ifilter (\i a -> if a == 2 || i == 0 then False else True) (unsafeFromList [1..3])
+-- >>> ifilter (\i a -> if a == 2 || i == 0 then False else True) (unsafeFromList @Vector [1..3])
 -- [3]
 --
--- >>> ifilter (\_ _ -> False) (unsafeFromList [1..3])
+-- >>> ifilter (\_ _ -> False) (unsafeFromList @Vector [1..3])
 -- []
 --
 ifilter
@@ -1689,13 +1694,13 @@ ifilter f = G.ifilter f . toVector
 --
 --   @since 0.1.2
 --
--- >>> filterM (\a -> if a == 2 then Just False else Just True) (unsafeFromList [1..3])
+-- >>> filterM (\a -> if a == 2 then Just False else Just True) (unsafeFromList @Vector [1..3])
 -- Just [1,3]
 --
--- >>> filterM (\a -> if a == 2 then Nothing else Just True) (unsafeFromList [1..3])
+-- >>> filterM (\a -> if a == 2 then Nothing else Just True) (unsafeFromList @Vector [1..3])
 -- Nothing
 --
--- >>> filterM (const $ Just False) (unsafeFromList [1..3])
+-- >>> filterM (const $ Just False) (unsafeFromList @Vector [1..3])
 -- Just []
 --
 filterM
@@ -1712,13 +1717,13 @@ filterM f = G.filterM f . toVector
 -- --
 -- --   @since 0.1.2
 -- --
--- -- >>> ifilterM (\i a -> if a == 2 || i == 0 then Just False else Just True) (unsafeFromList [1..3])
+-- -- >>> ifilterM (\i a -> if a == 2 || i == 0 then Just False else Just True) (unsafeFromList @Vector [1..3])
 -- -- Just [3]
 -- --
--- -- >>> ifilterM (\i a -> if a == 2 || i == 0 then Nothing else Just True) (unsafeFromList [1..3])
+-- -- >>> ifilterM (\i a -> if a == 2 || i == 0 then Nothing else Just True) (unsafeFromList @Vector [1..3])
 -- -- Nothing
 -- --
--- -- >>> ifilterM (\_ _ -> Just False) (unsafeFromList [1..3])
+-- -- >>> ifilterM (\_ _ -> Just False) (unsafeFromList @Vector [1..3])
 -- -- Just []
 -- --
 -- ifilterM
@@ -1734,7 +1739,7 @@ filterM f = G.filterM f . toVector
 --
 --   @since 0.1.2
 --
--- >>> backpermute (unsafeFromList [1..3]) (unsafeFromList [2,0])
+-- >>> toList $ backpermute @Vector (unsafeFromList @Vector [1..3]) (unsafeFromList @Vector [2,0])
 -- [3,1]
 --
 backpermute :: (G.Vector v a, G.Vector v Int) =>
