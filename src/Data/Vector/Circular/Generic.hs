@@ -1672,10 +1672,10 @@ elemIndices a = G.elemIndices a . toVector
 --
 -- If no elements satisfy the predicate, the resulting vector may be empty.
 --
--- >>> filter (\a -> if a == 2 then False else True) (unsafeFromList [1..3])
+-- >>> filter (\a -> if a == 2 then False else True) (unsafeFromList @Vector [1..3])
 -- [1,3]
 --
--- >>> filter (const False) (unsafeFromList [1..3])
+-- >>> filter (const False) (unsafeFromList @Vector [1..3])
 -- []
 --
 filter :: G.Vector v a => (a -> Bool) -> CircularVector v a -> v a
