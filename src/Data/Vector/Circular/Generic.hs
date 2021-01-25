@@ -202,7 +202,7 @@ import Prelude hiding (head, length, last, map, concat, takeWhile
                       ,foldl, foldr1, foldl1, all, any, and, or, sum
                       ,product, maximum, minimum, concatMap
                       ,zipWith, zipWith3, zip, zip3, replicate, enumFromTo
-                      ,enumFromThenTo, (++))
+                      ,enumFromThenTo, (++), filter)
 import Language.Haskell.TH.Syntax
 import qualified Data.Vector.Mutable as MVector
 import qualified Data.Vector.NonEmpty as NonEmpty
@@ -1667,6 +1667,20 @@ elemIndex a = G.elemIndex a . toVector
 --
 elemIndices :: (G.Vector v a, G.Vector v Int, Eq a) => a -> CircularVector v a -> v Int
 elemIndices a = G.elemIndices a . toVector
+
+-- | /O(n)/ Drop elements that do not satisfy the predicate.
+--
+-- If no elements satisfy the predicate, the resulting vector may be empty.
+--
+-- >>> filter (\a -> if a == 2 then False else True) (unsafeFromList @Vector [1..3])
+-- [1,3]
+--
+-- >>> filter (const False) (unsafeFromList @Vector [1..3])
+-- []
+--
+filter :: G.Vector v a => (a -> Bool) -> CircularVector v a -> v a
+filter f = G.filter f . toVector
+
 
 -- | /O(n)/ Drop elements that do not satisfy the predicate which is
 -- applied to values and their indices.

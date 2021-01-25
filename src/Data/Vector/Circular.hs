@@ -206,7 +206,7 @@ import Prelude hiding (head, length, last, map, concat, takeWhile
                       ,foldl, foldr1, foldl1, all, any, and, or, sum
                       ,product, maximum, minimum, concatMap
                       ,zipWith, zipWith3, zip, zip3, replicate, enumFromTo
-                      ,enumFromThenTo, (++))
+                      ,enumFromThenTo, (++), filter)
 import Language.Haskell.TH.Syntax
 import qualified Data.Foldable as Foldable
 import qualified Data.Semigroup.Foldable.Class as Foldable1
@@ -1651,6 +1651,19 @@ elemIndex a = NonEmpty.elemIndex a . toNonEmptyVector
 --
 elemIndices :: Eq a => a -> CircularVector a -> Vector Int
 elemIndices a = NonEmpty.elemIndices a . toNonEmptyVector
+
+-- | /O(n)/ Drop elements that do not satisfy the predicate.
+--
+-- If no elements satisfy the predicate, the resulting vector may be empty.
+--
+-- >>> filter (\a -> if a == 2 then False else True) (unsafeFromList [1..3])
+-- [1,3]
+--
+-- >>> filter (const False) (unsafeFromList [1..3])
+-- []
+--
+filter :: (a -> Bool) -> CircularVector a -> Vector a
+filter f = NonEmpty.filter f . toNonEmptyVector
 
 -- | /O(n)/ Drop elements that do not satisfy the predicate which is
 -- applied to values and their indices.
