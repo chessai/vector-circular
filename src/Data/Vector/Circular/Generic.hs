@@ -327,9 +327,11 @@ instance Lift a => Lift (CircularVector v a) where
     pure $ ConE ''CircularVector
       `AppE` v
       `AppE` r
-#if MIN_VERSION_template_haskell(2,16,0)
+#if MIN_VERSION_template_haskell(2,17,0)
+  liftTyped = unsafeCodeCoerce . lift
+#elif MIN_VERSION_template_haskell(2,16,0)
   liftTyped = unsafeTExpCoerce . lift
-#endif /* MIN_VERSION_template_haskell(2,16,0) */
+#endif
 
 -- | Get the length of a 'CircularVector'.
 --

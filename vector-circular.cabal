@@ -36,7 +36,7 @@ library
     , nonempty-vector >= 0.2 && < 0.3
     , primitive >= 0.6.4 && < 0.8
     , semigroupoids >= 5.3 && < 5.4
-    , template-haskell >= 2.12 && < 2.17
+    , template-haskell >= 2.12 && < 2.18
     , vector >= 0.12 && < 0.13
     , deepseq >= 1.4 && < 1.5
   ghc-options:

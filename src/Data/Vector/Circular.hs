@@ -326,9 +326,11 @@ instance Lift a => Lift (CircularVector a) where
     pure $ ConE ''CircularVector
       `AppE` (VarE 'NonEmpty.unsafeFromVector `AppE` v)
       `AppE` r
-#if MIN_VERSION_template_haskell(2,16,0)
+#if MIN_VERSION_template_haskell(2,17,0)
+  liftTyped = unsafeCodeCoerce . lift
+#elif MIN_VERSION_template_haskell(2,16,0)
   liftTyped = unsafeTExpCoerce . lift
-#endif /* MIN_VERSION_template_haskell(2,16,0) */
+#endif
 
 -- | Get the length of a 'CircularVector'.
 --
@@ -555,12 +557,7 @@ rotateLeft r' (CircularVector v r) = CircularVector v h
 --   @since 0.1
 vec :: Lift a => [a] -> Q (TExp (CircularVector a))
 vec [] = fail "Cannot create an empty CircularVector!"
-vec xs =
-#if MIN_VERSION_template_haskell(2,16,0)
-  liftTyped (unsafeFromList xs)
-#else
-  unsafeTExpCoerce [|unsafeFromList xs|]
-#endif /* MIN_VERSION_template_haskell(2,16,0) */
+vec xs = unsafeTExpCoerce (lift (unsafeFromList xs))
 
 -- | @since 0.1
 equivalent :: Ord a => CircularVector a -> CircularVector a -> Bool
