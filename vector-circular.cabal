@@ -2,7 +2,7 @@ cabal-version: 2.2
 name:
   vector-circular
 version:
-  0.1.3
+  0.1.4
 synopsis:
   circular vectors
 description:
