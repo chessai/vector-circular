@@ -1,11 +1,2 @@
 write-ghc-environment-files: never
 packages: .
-
--- for template-haskell 2.18 support. only matters to the test suite,
--- and hackage ignores this file.
-source-repository-package
-  type: git
-  location: https://github.com/hedgehogqa/haskell-hedgehog
-  subdir:
-    hedgehog
-  tag: 21a5131d6cb2418f8a032759a69003dcb8cfdb30
