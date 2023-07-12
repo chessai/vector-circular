@@ -36,6 +36,7 @@ library
     , nonempty-vector >= 0.2 && < 0.3
     , primitive >= 0.6.4 && < 0.8
     , semigroupoids >= 5.3 && < 6.1
+    , foldable1-classes-compat >= 0.1 && < 0.2
     , template-haskell >= 2.12 && < 2.21
     , vector >= 0.12 && < 0.14
     , deepseq >= 1.4 && < 1.5
