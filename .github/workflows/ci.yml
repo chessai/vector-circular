@@ -13,19 +13,19 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
-        cabal: ["3.6"]
+        cabal: ["3.8"]
         ghc:
-          - "8.6.5"
-          - "8.8.4"
           - "8.10.7"
           - "9.0.2"
-          - "9.2.1"
+          - "9.2.8"
+          - "9.4.7"
+          - "9.6.2"
 
     steps:
-    - uses: actions/checkout@v2.3.5
+    - uses: actions/checkout@v3
       if: github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.ref == 'refs/heads/master'
 
-    - uses: haskell/actions/setup@v1
+    - uses: haskell/actions/setup@v2
       id: setup-haskell-cabal
       with:
         ghc-version: ${{ matrix.ghc }}
