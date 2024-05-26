@@ -35,7 +35,6 @@ library
     , base >= 4.11 && < 4.21
     , nonempty-vector >= 0.2 && < 0.3
     , primitive >= 0.6.4 && < 0.10
-    , semigroupoids >= 5.3 && < 6.1
     , template-haskell >= 2.12 && < 2.23
     , vector >= 0.12 && < 0.14
     , deepseq >= 1.4 && < 1.6
