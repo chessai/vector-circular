@@ -192,7 +192,7 @@ import Control.DeepSeq
 #endif /* MIN_VERSION_base(4,13,0) */
 import Data.List.NonEmpty (NonEmpty((:|)))
 import Data.Primitive.MutVar ( newMutVar, readMutVar, writeMutVar )
-import Data.Semigroup.Foldable.Class (Foldable1)
+import Data.Foldable1 (Foldable1)
 import Data.Monoid (All(..))
 import Data.Vector (Vector)
 import Data.Vector.NonEmpty (NonEmptyVector)
@@ -206,10 +206,10 @@ import Prelude hiding (head, length, last, map, concat, takeWhile
                       ,foldl, foldr1, foldl1, all, any, and, or, sum
                       ,product, maximum, minimum, concatMap
                       ,zipWith, zipWith3, zip, zip3, replicate, enumFromTo
-                      ,enumFromThenTo, (++), filter)
+                      ,enumFromThenTo, (++), filter, foldl')
 import Language.Haskell.TH.Syntax
 import qualified Data.Foldable as Foldable
-import qualified Data.Semigroup.Foldable.Class as Foldable1
+import qualified Data.Foldable1 as Foldable1
 import qualified Data.Vector as Vector
 import qualified Data.Vector.Mutable as MVector
 import qualified Data.Vector.NonEmpty as NonEmpty
