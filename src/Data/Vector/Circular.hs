@@ -206,7 +206,7 @@ import Prelude hiding (head, length, last, map, concat, takeWhile
                       ,foldl, foldr1, foldl1, all, any, and, or, sum
                       ,product, maximum, minimum, concatMap
                       ,zipWith, zipWith3, zip, zip3, replicate, enumFromTo
-                      ,enumFromThenTo, (++), filter)
+                      ,enumFromThenTo, (++), filter, foldl')
 import Language.Haskell.TH.Syntax
 import qualified Data.Foldable as Foldable
 import qualified Data.Semigroup.Foldable.Class as Foldable1
