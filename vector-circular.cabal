@@ -39,6 +39,7 @@ library
     , template-haskell >= 2.12 && < 2.23
     , vector >= 0.12 && < 0.14
     , deepseq >= 1.4 && < 1.6
+    , foldable1-classes-compat >= 0.1 && < 0.2
   ghc-options:
     -Wall
     -O2
