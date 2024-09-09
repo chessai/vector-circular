@@ -22,6 +22,13 @@ jobs:
           - "9.6.6"
           - "9.8.2"
           - "9.10.1"
+        exclude:
+          # Make sure we only use GHCs with the native backend
+          # announced in haskell.org/ghc/blog/20211029-ghc-9.2.1-released.html
+          - os: macos-latest
+            ghc: "8.10.7"
+          - os: macos-latest
+            ghc: "9.0.2"
 
     steps:
     - uses: actions/checkout@v4
