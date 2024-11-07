@@ -202,7 +202,7 @@ import Prelude hiding (head, length, last, map, concat, takeWhile
                       ,foldl, foldr1, foldl1, all, any, and, or, sum
                       ,product, maximum, minimum, concatMap
                       ,zipWith, zipWith3, zip, zip3, replicate, enumFromTo
-                      ,enumFromThenTo, (++), filter)
+                      ,enumFromThenTo, (++), filter, foldl')
 import Language.Haskell.TH.Syntax
 import qualified Data.Vector.Mutable as MVector
 import qualified Data.Vector.NonEmpty as NonEmpty

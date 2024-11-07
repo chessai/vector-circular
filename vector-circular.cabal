@@ -32,13 +32,13 @@ library
     Data.Vector.Circular
     Data.Vector.Circular.Generic
   build-depends:
-    , base >= 4.11 && < 4.18
+    , base >= 4.11 && < 4.21
     , nonempty-vector >= 0.2 && < 0.3
-    , primitive >= 0.6.4 && < 0.8
-    , semigroupoids >= 5.3 && < 5.4
-    , template-haskell >= 2.12 && < 2.20
-    , vector >= 0.12 && < 0.13
-    , deepseq >= 1.4 && < 1.5
+    , primitive >= 0.6.4 && < 0.10
+    , template-haskell >= 2.12 && < 2.23
+    , vector >= 0.12 && < 0.14
+    , deepseq >= 1.4 && < 1.6
+    , foldable1-classes-compat >= 0.1 && < 0.2
   ghc-options:
     -Wall
     -O2
